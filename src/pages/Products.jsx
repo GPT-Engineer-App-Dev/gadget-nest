@@ -1,19 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const sampleProducts = [
-  { id: 1, name: 'Smartphone X', category: 'Phones', price: 799 },
-  { id: 2, name: 'Laptop Pro', category: 'Computers', price: 1299 },
-  { id: 3, name: 'Wireless Earbuds', category: 'Audio', price: 149 },
-  { id: 4, name: '4K Smart TV', category: 'TVs', price: 899 },
-  { id: 5, name: 'Gaming Console', category: 'Gaming', price: 499 },
+  { id: 1, name: 'Smartphone X', category: 'Phones', price: 799, brand: 'TechCo' },
+  { id: 2, name: 'Laptop Pro', category: 'Computers', price: 1299, brand: 'CompuTech' },
+  { id: 3, name: 'Wireless Earbuds', category: 'Audio', price: 149, brand: 'SoundWave' },
+  { id: 4, name: '4K Smart TV', category: 'TVs', price: 899, brand: 'VisualPro' },
+  { id: 5, name: 'Gaming Console', category: 'Gaming', price: 499, brand: 'GameMaster' },
 ];
 
-const Products = ({ searchQuery }) => {
+const Products = () => {
+  const [products, setProducts] = useState(sampleProducts);
+  const [filteredProducts, setFilteredProducts] = useState(sampleProducts);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [priceRange, setPriceRange] = useState([0, 2000]);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const categories = ['All', ...new Set(sampleProducts.map(product => product.category))];
+  const maxPrice = Math.max(...sampleProducts.map(product => product.price));
+
+  useEffect(() => {
+    filterProducts();
+  }, [selectedCategory, priceRange, searchQuery]);
+
+  const filterProducts = () => {
+    let filtered = products;
+
+    if (selectedCategory !== 'All') {
+      filtered = filtered.filter(product => product.category === selectedCategory);
+    }
+
+    filtered = filtered.filter(product => 
+      product.price >= priceRange[0] && product.price <= priceRange[1]
+    );
+
+    if (searchQuery) {
+      filtered = filtered.filter(product =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.brand.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    setFilteredProducts(filtered);
+  };
 
   const handleCategoryChange = (value) => {
     setSelectedCategory(value);
@@ -23,11 +56,9 @@ const Products = ({ searchQuery }) => {
     setPriceRange(value);
   };
 
-  const filteredProducts = sampleProducts.filter(product =>
-    (product.name.toLowerCase().includes(searchQuery.toLowerCase())) && 
-    (selectedCategory === 'All' || product.category === selectedCategory) &&
-    (product.price >= priceRange[0] && product.price <= priceRange[1])
-  );
+  const handleSearchChange = (event) => {
+    setSearchQuery(event.target.value);
+  };
 
   return (
     <div className="container mx-auto p-4">
@@ -40,29 +71,36 @@ const Products = ({ searchQuery }) => {
             </CardHeader>
             <CardContent>
               <div className="mb-4">
-                <label className="block mb-2">Category</label>
-                <Select onValueChange={handleCategoryChange}>
-                  <SelectTrigger>
+                <Label htmlFor="search">Search</Label>
+                <Input
+                  id="search"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                />
+              </div>
+              <div className="mb-4">
+                <Label htmlFor="category">Category</Label>
+                <Select onValueChange={handleCategoryChange} value={selectedCategory}>
+                  <SelectTrigger id="category">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="All">All</SelectItem>
-                    <SelectItem value="Phones">Phones</SelectItem>
-                    <SelectItem value="Computers">Computers</SelectItem>
-                    <SelectItem value="Audio">Audio</SelectItem>
-                    <SelectItem value="TVs">TVs</SelectItem>
-                    <SelectItem value="Gaming">Gaming</SelectItem>
+                    {categories.map(category => (
+                      <SelectItem key={category} value={category}>{category}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <label className="block mb-2">Price Range</label>
+                <Label>Price Range</Label>
                 <Slider
                   min={0}
-                  max={2000}
+                  max={maxPrice}
                   step={10}
                   value={priceRange}
                   onValueChange={handlePriceRangeChange}
+                  className="mt-2"
                 />
                 <div className="flex justify-between mt-2">
                   <span>${priceRange[0]}</span>
@@ -81,6 +119,7 @@ const Products = ({ searchQuery }) => {
                 </CardHeader>
                 <CardContent>
                   <p>Category: {product.category}</p>
+                  <p>Brand: {product.brand}</p>
                   <p>Price: ${product.price}</p>
                   <button className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
                     Add to Cart
@@ -88,7 +127,7 @@ const Products = ({ searchQuery }) => {
                 </CardContent>
               </Card>
             )) : (
-              <p>No products found matching your search criteria.</p>
+              <p>No products found matching your criteria.</p>
             )}
           </div>
         </main>
