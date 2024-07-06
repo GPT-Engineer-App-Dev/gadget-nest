@@ -12,17 +12,32 @@ import { cn } from "@/lib/utils";
 import { CircleUser, Menu, Package2 } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { navItems } from "../App";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
 
 const Layout = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (event) => {
+    setSearchQuery(event.target.value);
+  };
+
   return (
     <div className="flex min-h-screen w-full flex-col">
       <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 justify-between">
         <DesktopNav />
+        <Input
+          type="text"
+          placeholder="Search..."
+          value={searchQuery}
+          onChange={handleSearch}
+          className="hidden md:block"
+        />
         <MobileNav />
         <UserMenu />
       </header>
       <main className="flex-grow overflow-auto">
-        <Outlet />
+        <Outlet context={{ searchQuery }} />
       </main>
     </div>
   );

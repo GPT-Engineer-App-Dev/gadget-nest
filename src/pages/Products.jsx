@@ -11,7 +11,7 @@ const sampleProducts = [
   { id: 5, name: 'Gaming Console', category: 'Gaming', price: 499 },
 ];
 
-const Products = () => {
+const Products = ({ searchQuery }) => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [priceRange, setPriceRange] = useState([0, 2000]);
 
@@ -23,7 +23,8 @@ const Products = () => {
     setPriceRange(value);
   };
 
-  const filteredProducts = sampleProducts.filter(product => 
+  const filteredProducts = sampleProducts.filter(product =>
+    (product.name.toLowerCase().includes(searchQuery.toLowerCase())) && 
     (selectedCategory === 'All' || product.category === selectedCategory) &&
     (product.price >= priceRange[0] && product.price <= priceRange[1])
   );
@@ -73,7 +74,7 @@ const Products = () => {
         </aside>
         <main className="w-full md:w-3/4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProducts.map(product => (
+            {filteredProducts.length > 0 ? filteredProducts.map(product => (
               <Card key={product.id}>
                 <CardHeader>
                   <CardTitle>{product.name}</CardTitle>
@@ -86,7 +87,9 @@ const Products = () => {
                   </button>
                 </CardContent>
               </Card>
-            ))}
+            )) : (
+              <p>No products found matching your search criteria.</p>
+            )}
           </div>
         </main>
       </div>
