@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
@@ -12,6 +13,7 @@ const sampleProducts = [
 ];
 
 const Products = () => {
+  const { searchQuery } = useOutletContext();
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [priceRange, setPriceRange] = useState([0, 2000]);
 
@@ -25,7 +27,8 @@ const Products = () => {
 
   const filteredProducts = sampleProducts.filter(product => 
     (selectedCategory === 'All' || product.category === selectedCategory) &&
-    (product.price >= priceRange[0] && product.price <= priceRange[1])
+    (product.price >= priceRange[0] && product.price <= priceRange[1]) &&
+    (searchQuery === '' || product.name.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   return (
